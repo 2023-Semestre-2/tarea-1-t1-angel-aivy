@@ -22,7 +22,13 @@ public class CPU {
     public int[] ejecutarInstruction(int memoryPos, Memoria memoria) {
         this.PC = memoryPos;
         Instruccion instruccion = memoria.getInstruction(memoryPos);
-        registros.put(instruccion.getRegistro(), instruccion.getValor());
+        int valor = instruccion.getValor();
+        if (valor == 0){
+            valor = registros.getOrDefault(instruccion.getRegistro(), 0);
+        }
+        registros.put(instruccion.getRegistro(), valor);
+
+        calcularAC(instruccion);
 
         int[] resultArray = new int[7];
         resultArray[0] = this.PC;
@@ -33,7 +39,31 @@ public class CPU {
         resultArray[5] = registros.getOrDefault("CX", 0);
         resultArray[6] = registros.getOrDefault("DX", 0);
 
+
+
         return resultArray;
+    }
+
+    public void calcularAC (Instruccion instruccion) {
+        String operador = instruccion.getOperador();
+        String registroKey = instruccion.getRegistro();
+        int valor = instruccion.getValor();
+
+        switch (operador) {
+            case "MOV" -> // MOV
+                    this.registros.put(registroKey, valor);
+            case "LOAD" -> // LOAD
+                    this.AC = this.registros.getOrDefault(registroKey, 0);
+            case "ADD" -> // ADD
+                    this.AC += this.registros.getOrDefault(registroKey, 0);
+            case "SUB" -> // SUB
+                    this.AC -= this.registros.getOrDefault(registroKey, 0);
+            case "STORE" -> // STORE
+                    this.registros.put(registroKey, this.AC);
+            default -> {
+            }
+            // Manejar operador no válido
+        }
     }
 
     //TODO: Este tiene un bug, hay que ajsutarlo para que haga el calculo de AC
